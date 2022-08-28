@@ -12,7 +12,7 @@ fn main() {
     let canvas = game.borrow_canvas_mut();
     {
         canvas.draw(&test_figure, Point { x: 0, y: 0 });
-        canvas.draw(&test_figure_two, Point { x: 50, y: 10 });
+        canvas.draw(&test_figure_two, Point { x: 0, y: 0 });
         canvas.draw_canvas(&Point { x: 0, y: 10 });
         dbg!(&canvas.canvas);
     }
