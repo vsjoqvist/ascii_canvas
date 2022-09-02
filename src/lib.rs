@@ -1,6 +1,7 @@
 use crossterm::execute;
 use crossterm::terminal::{DisableLineWrap, EnterAlternateScreen};
 use std::io::{stdout, Stdout};
+use std::mem::take;
 use std::ops::{Add, Div, Mul, Sub};
 use thiserror::Error;
 
@@ -126,7 +127,7 @@ impl<'a> Canvas<'a> {
     }
 
     ///Adds the figure to the draw list. The figure will be drawned to the screen when draw_canvas is called.
-    pub fn draw(&mut self, figure: &'a Figure, pos: Point) {
+    pub fn add_figure(&mut self, figure: &'a Figure, pos: Point) {
         self.to_draw.push((figure, pos));
     }
 
@@ -134,75 +135,106 @@ impl<'a> Canvas<'a> {
     ///
     /// Currently using a negative offset will cause a panic
     pub fn draw_canvas(&mut self, offset: &Point) {
-        for figure in &self.to_draw {
+        let mut temp_vec = take(&mut self.to_draw);
+
+        for figure in temp_vec.drain(..) {
+            let figure = figure;
             let (figure, pos) = figure;
-            let new_canvas = (
-                *offset,
-                Point {
-                    x: self.size.0 as i32,
-                    y: self.size.1 as i32,
-                } + *offset,
-            );
+
+            let new_canvas_start = *offset;
+
+            let new_canvas_end = Point {
+                x: self.size.0 as i32,
+                y: self.size.1 as i32,
+            } + *offset;
 
             let corrected_figure_dim = figure.dim - Point::new(1, 0);
 
-            if !(pos.x + corrected_figure_dim.x <= new_canvas.1.x
-                || pos.x >= new_canvas.0.x && pos.y + corrected_figure_dim.y <= new_canvas.1.y
-                || pos.y >= new_canvas.0.y)
+            if !(pos.x + corrected_figure_dim.x <= new_canvas_end.x
+                || pos.x >= new_canvas_start.x
+                    && pos.y + corrected_figure_dim.y <= new_canvas_end.y
+                || pos.y >= new_canvas_start.y)
             {
                 continue;
             }
 
-            let mut cursor_position = *pos;
+            let mut cursor_position = pos;
             for instruction in &figure.instructions {
                 match *instruction {
-                    FigureInstruction::SkipTo(p) => cursor_position = *pos + p,
+                    FigureInstruction::SkipTo(p) => cursor_position = pos + p,
                     FigureInstruction::Draw(s) => {
-                        if cursor_position.y <= new_canvas.1.y && cursor_position.y >= new_canvas.0.y
+                        if cursor_position.y <= new_canvas_end.y
+                            && cursor_position.y >= new_canvas_start.y
                         {
-                            
-                            if cursor_position.x < new_canvas.0.x && cursor_position.x + s.len() as i32 - 1 < new_canvas.0.x || cursor_position.x > new_canvas.1.x && cursor_position.x + s.len() as i32 - 1 > new_canvas.1.x {
+                            if cursor_position.x < new_canvas_start.x
+                                && cursor_position.x + s.len() as i32 - 1 < new_canvas_start.x
+                                || cursor_position.x > new_canvas_end.x
+                                    && cursor_position.x + s.len() as i32 - 1 > new_canvas_end.x
+                            {
                                 continue;
                             }
 
-                            //The first character on the line that should be drawn
-                            let to_draw_lower_bound = if cursor_position.x >= new_canvas.0.x {
-                                0
-                            } else {
-                                (new_canvas.0.x - cursor_position.x).abs()
-                            };
-
-                            //The lowerbound together with the upperbound 
-                            let to_draw_upper_bound = if s.len() as i32 - 1 <= new_canvas.1.x {
-                                s.len() as i32
-                            } else {
-                                new_canvas.1.x - cursor_position.x + 1
-                            };
-
-                            let place_at = (cursor_position.x + to_draw_lower_bound
-                                + offset.x
-                                + (cursor_position.y + offset.y) * i32::from(self.size.0))
-                                as usize;
-
-                            dbg!(
-                                new_canvas,
-                                cursor_position,
-                                offset,
-                                to_draw_lower_bound,
-                                to_draw_upper_bound,
-                                place_at,
-                                s.len(),
-                                self.canvas.len(),
-                                self.size,
-                            );
-
-
-                            self.canvas.replace_range(place_at..place_at + to_draw_upper_bound as usize, &s[to_draw_lower_bound as usize..to_draw_upper_bound as usize]);
+                            {
+                                self.execute_instruction(
+                                    s,
+                                    &cursor_position,
+                                    &new_canvas_start,
+                                    &new_canvas_end,
+                                    offset,
+                                );
+                            }
                         }
                     }
                 }
             }
         }
+    }
+
+    fn execute_instruction(
+        &mut self,
+        string: &str,
+        cursor_position: &Point,
+        canvas_start: &Point,
+        canvas_end: &Point,
+        offset: &Point,
+    ) {
+        //The first character on the line that should be drawn
+        let to_draw_lower_bound = if cursor_position.x >= canvas_start.x {
+            0
+        } else {
+            (canvas_start.x - cursor_position.x).abs()
+        };
+
+        //The lowerbound together with the upperbound
+        let to_draw_upper_bound = if string.len() as i32 - 1 <= canvas_end.x {
+            string.len() as i32
+        } else {
+            canvas_end.x - cursor_position.x + 1
+        };
+
+        let place_at = (cursor_position.x
+            + to_draw_lower_bound
+            + offset.x
+            + (cursor_position.y + offset.y) * i32::from(self.size.0))
+            as usize;
+
+        // dbg!(
+        //     canvas_start,
+        //     canvas_end,
+        //     cursor_position,
+        //     offset,
+        //     to_draw_lower_bound,
+        //     to_draw_upper_bound,
+        //     place_at,
+        //     string.len(),
+        //     self.canvas.len(),
+        //     self.size,
+        // );
+
+        self.canvas.replace_range(
+            place_at..place_at + to_draw_upper_bound as usize,
+            &string[to_draw_lower_bound as usize..to_draw_upper_bound as usize],
+        );
     }
 }
 
