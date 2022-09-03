@@ -1,3 +1,5 @@
+//TODO make the program treat top left as 1,1 instead of 0,0
+
 use crossterm::execute;
 use crossterm::terminal::{DisableLineWrap, EnterAlternateScreen};
 use std::io::{stdout, Stdout};
@@ -11,7 +13,7 @@ pub struct Point {
     pub y: i32,
 }
 
-impl Point {
+impl Point { 
     pub fn new(x: i32, y: i32) -> Self {
         Self { x, y }
     }
@@ -218,18 +220,18 @@ impl<'a> Canvas<'a> {
             + (cursor_position.y + offset.y) * i32::from(self.size.0))
             as usize;
 
-        // dbg!(
-        //     canvas_start,
-        //     canvas_end,
-        //     cursor_position,
-        //     offset,
-        //     to_draw_lower_bound,
-        //     to_draw_upper_bound,
-        //     place_at,
-        //     string.len(),
-        //     self.canvas.len(),
-        //     self.size,
-        // );
+        dbg!(
+            canvas_start,
+            canvas_end,
+            cursor_position,
+            offset,
+            to_draw_lower_bound,
+            to_draw_upper_bound,
+            place_at,
+            string.len(),
+            self.canvas.len(),
+            self.size,
+        );
 
         self.canvas.replace_range(
             place_at..place_at + to_draw_upper_bound as usize,
