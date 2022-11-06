@@ -1,19 +1,19 @@
-use ascii_canvas::{Figure, Game, Point};
-use crossterm::terminal::size;
+use ascii_canvas::{Point, Canvas, Figure};
+use std::io::{stdout};
+use std::thread::sleep;
+use std::time::Duration;
 
 fn main() {
-    let mut game = Game::new(size().unwrap()).unwrap();
-    let test_figure = "aaaa";
-    let test_figure_two = "hello 123";
-    let test_figure = Figure::new(test_figure).unwrap();
-    let test_figure_two = Figure::new(test_figure_two).unwrap();
+    let mut stdout = stdout();
+    let mut canvas = Canvas::new();
+    Canvas::init(&mut stdout);
 
-    let _x = 0;
-    let canvas = game.borrow_canvas_mut();
-    {
-        canvas.add_figure(&test_figure, Point::new(0, 10));
-        //canvas.add_figure(&test_figure_two, Point { x: 50, y: 10 });
-        canvas.draw_canvas(&Point { x: 0, y: 0 });
-        dbg!(&canvas.canvas);
-    }
+    const FIGURE: Figure = Figure::new("abc123\n hej");
+
+    canvas.add_figure(&FIGURE, Point { x: 205, y: 0 });
+    canvas.draw(&mut stdout);
+    sleep(Duration::from_secs(2));
+    Canvas::revert(&mut stdout);
+
+
 }
