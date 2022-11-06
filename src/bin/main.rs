@@ -8,12 +8,9 @@ fn main() {
     let mut canvas = Canvas::new();
     Canvas::init(&mut stdout);
 
-    const FIGURE: Figure = Figure::new("abc123\n hej");
+    const FIGURE: Figure = Figure::new("abc123\nhej");
 
-    canvas.add_figure(FIGURE, Point { x: 205, y: 0 });
-    canvas.add_figure(FIGURE, Point { x: 205, y: 0 });
-    canvas.add_figure(FIGURE, Point { x: 205, y: 0 });
-    canvas.add_figure(FIGURE, Point { x: 205, y: 0 });
+    canvas.add_figure(FIGURE, Point { x: 0, y: 0 });
     canvas.draw(&mut stdout);
     sleep(Duration::from_secs(2));
     Canvas::revert(&mut stdout);
