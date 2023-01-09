@@ -7,7 +7,6 @@ description = "A libary to help with drawing characters or other art to the term
 readme = "README.md"
 repository = "https://github.com/rust-lang/cargo/"
 license = "MIT"
-license-file = "LICENSE"
 keywords = ["gamedev", "graphics, terminal, art, asciiart"]
 categories = ["terminal-drawing, asciiart"]
 
