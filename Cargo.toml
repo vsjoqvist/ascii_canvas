@@ -2,6 +2,14 @@
 name = "asciicanvas"
 version = "0.1.0"
 edition = "2021"
+authors = ["Viktor Sjöqvist"]
+description = "A libary to help with drawing characters or other art to the terminal"
+readme = "README.md"
+repository = "https://github.com/rust-lang/cargo/"
+license = "MIT"
+license-file = "LICENSE"
+keywords = ["gamedev", "graphics, terminal, art, asciiart"]
+categories = ["terminal-drawing, asciiart]
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
