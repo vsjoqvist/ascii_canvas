@@ -71,6 +71,7 @@ pub trait Draw {
     fn draw(&mut self, point: Point, stdout: &mut Stdout);
 }
 
+///A basic drawing type to help you with drawing figures or other characters to the screen
 #[derive(Debug)]
 pub struct Figure {
     figure: &'static str,
