@@ -10,7 +10,7 @@ fn main() {
 
     const FIGURE: Figure = Figure::new("abc123\nhej");
 
-    canvas.add_figure(FIGURE, Point { x: 0, y: 0 });
+    canvas.add_drawing(FIGURE, Point { x: 0, y: 10 });
     canvas.draw(&mut stdout);
     sleep(Duration::from_secs(2));
     Canvas::revert(&mut stdout);

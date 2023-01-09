@@ -65,6 +65,8 @@ impl Div for Point {
     }
 }
 
+
+///Allows creation of new drawing types. Make sure to handle drawings being drawn out side of the canvas
 pub trait Draw {
     fn draw(&mut self, point: Point, stdout: &mut Stdout);
 }
@@ -87,14 +89,21 @@ impl Draw for Figure {
         let size = size().unwrap();
 
         for line in str.lines().enumerate() {
-            if pos.y + (line.0 as u16) < size.1 {
+            if pos.y + (line.0 as u16) < size.1 && pos.x < size.0 {
+                let line_length = (line.1.chars().count() as u16);
                 stdout.queue(MoveTo(pos.x, pos.y + line.0 as u16)).unwrap();
-                print!("{}", line.1)
+                let line = if pos.x + line_length < size.1 as u16 {
+                    line.1
+                } else {    
+                    &line.1[0..(size.0-pos.x+line_length-1) as usize]
+                };
+                print!("{}", line);
             }
         }
     }
 }
 
+///The top left cell is 0, 0
 pub struct Canvas {
     draw_list: Vec<(Box<dyn Draw>, Point)>,
 }
@@ -121,16 +130,18 @@ impl Canvas {
         execute!(stdout, LeaveAlternateScreen, EnableLineWrap, Show).unwrap();
     }
 
-    pub fn add_figure<T: Draw + 'static>(&mut self, figure: T, position: Point) {
-        self.draw_list.push((Box::new(figure), position));
+    pub fn add_drawing<T: Draw + 'static>(&mut self, drawing: T, position: Point) {
+        self.draw_list.push((Box::new(drawing), position));
     }
 
+    ///Draws all drawing to stdout
     pub fn draw(&mut self, stdout: &mut Stdout) {
         let draw_list = take(&mut self.draw_list);
         stdout.queue(Clear(All)).unwrap();
 
-        for mut figure in draw_list {
-            figure.0.draw(figure.1, stdout);
+        for drawing in draw_list {
+            let (mut drawing, pos) = drawing;
+            drawing.draw(pos, stdout);
         }
 
         stdout.flush().unwrap();
