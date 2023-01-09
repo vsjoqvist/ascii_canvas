@@ -1,6 +1,6 @@
 //This is a very simple example on how this could be used
 
-use ascii_canvas::{Canvas, Figure, Point};
+use asciicanvas::{Canvas, Figure, Point};
 use std::io::stdout;
 use std::thread::sleep;
 use std::time::Duration;
