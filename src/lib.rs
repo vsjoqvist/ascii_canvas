@@ -90,12 +90,13 @@ impl Draw for Figure {
 
         for line in str.lines().enumerate() {
             if pos.y + (line.0 as u16) < size.1 && pos.x < size.0 {
-                let line_length = (line.1.chars().count() as u16);
+                let line_length = line.1.chars().count() as u16;
                 stdout.queue(MoveTo(pos.x, pos.y + line.0 as u16)).unwrap();
-                let line = if pos.x + line_length < size.1 as u16 {
+                let line = if pos.x + line_length < size.0 as u16 {
                     line.1
                 } else {    
-                    &line.1[0..(size.0-pos.x+line_length-1) as usize]
+                    &line.1[0..(line_length - (pos.x + line_length - size.0)) as usize]
+                    
                 };
                 print!("{}", line);
             }
